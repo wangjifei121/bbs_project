@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>注册</title>
+    <link rel="stylesheet" href="/root/my_BBS/bbs/static/bootstrap-3.3.7/css/bootstrap.css">
+    <link rel="stylesheet" href="/root/my_BBS/bbs/static/css/blog.css">
+</head>
+<body>
+{% csrf_token %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-6 col-md-offset-3">
+            <form class="login-form">
+            
+                {% for foo in form_obj %}
+                    <div class="form-group">
+                        <label for="{{ foo.id_for_label }}">{{ foo.label }}</label>
+                        {{ foo }}
+                        {% if forloop.counter == 1 %}
+                            <span class="help-block" id="user_id"></span>
+                        {% else %}
+                            <span class="help-block"></span>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+
+                {#    【上传头像的前端代码】#}
+                <div class="form-group">
+                    <label for="avatar">头像<img id="avatar-img" src="/static/default.png" alt=""
+                                               style="height: 80px;width: 80px;margin-left: 15px"></label>
+                    <input type="file" accept="image/*" id="avatar" style="display: none;">
+                </div>
+
+                <div class="form-group">
+                    <label for="v-code" style="display: block">验证码</label>
+                    <input type="text" id="v-code" class="form-control" style="width: 250px;display: inline-block">
+                    <img src="/v-code/" id="i1" style="float: right">
+                    <span id="error-p" class="err-text"></span>
+                </div>
+                <button type="button" class="btn btn-default" id="reg-btn">注册</button>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+<script src="/static/js/jquery.js"></script>
+<script src="/static/js/setupAjax.js"></script>
+<script>
+{#    【用户名查重的ajax】#}
+    var $username = $('#id_username');
+    $username.blur(function () {
+        var user = $username.val();
+        $.ajax({
+            url:'/user/',
+            type:'post',
+            data:{user:user},
+            success:function (res) {
+                if(res.code===0){
+                    $('#user_id').text('')
+                }else {
+                    $('#user_id').text(res.msg).css('color', 'red')
+                }
+            }
+        })
+    });
+    $('#reg-btn').click(function () {
+        // 取值
+        var fdata = new FormData();
+        fdata.append('username', $('#id_username').val());
+        fdata.append('password', $('#id_password').val());
+        fdata.append('re_password', $('#id_re_password').val());
+        fdata.append('phone', $('#id_phone').val());
+        fdata.append('email', $('#id_email').val());
+        fdata.append('v_code', $('#v-code').val());
+        fdata.append('avatar', $('#avatar')[0].files[0]);
+        // 发送ajax
+        $.ajax({
+            url: '/register/',
+            type: 'post',
+            data: fdata,
+            processData: false,
+            contentType: false,
+            success: function (res) {
+                console.log(res.code);
+                if (res.code === 2) {
+                    $('#error-p').text(res.msg)
+                } else if (res.code === 3) {
+                    $('#user_id').text(res.msg).css('color', 'red')
+                } else if (res.code === 0) {
+                    location.href = res.msg
+                } else if (res.code === 1) {
+                    // 遍历取出所有的错误提示信息，在页面上展示出来
+                    $.each(res.msg, function (k, v) {
+                        $('#id_' + k).next().text(v[0]).parent().addClass('has-error');
+                    })
+                }
+            }
+        })
+    });
+    // 每一个input标签获取焦点的时候，把自己标签内容清空，把父标签的has-error样式移除
+    $('input.form-control').focus(function () {
+        $(this).val('').siblings('span').text('').parent().removeClass('has-error');
+    });
+    // 前端实现图片预览
+    // 当用户选择文件之后，头像的input标签有值时触发
+    $('#avatar').change(function () {
+        // 找到用户选中的那个文件
+        console.log(this);
+        var file = this.files[0];
+        console.log(file);
+        // 生成一个读文件的对象
+        var fr = new FileReader();
+        // 从文件中读取头像文件数据
+        fr.readAsDataURL(file);
+        // 读完之后
+        fr.onload = function () {
+            // 将头像img标签的scr属性更换成我选中的那个文件
+            $('#avatar-img').attr('src', fr.result)
+        }
+    });
+    $('#i1').click(function () {
+        // 使用正则判断一下，如果原来的url有？就去掉，没有就加上【但是这样做的在验证码函数上加上装饰器】
+        var url = this.src;
+        if (/\?$/.test(url)) {
+            this.src = url.slice(0, -1);
+        } else {
+            this.src = url + '?';
+        }
+    })
+
+</script>
+
+</html>
+{#【注册时：前端有错误信息就显示错误信息，后端查出不符合要求就返回错误信息，不做写入数据库的处理】#}
+{#【对应成功时：前端跳转到指定页面，后端将数据写进数据库，同时给前端一个注册成功的响应】#}

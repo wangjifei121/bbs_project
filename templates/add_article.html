@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>添加文章</title>
+    <link rel="stylesheet" href="static/bootstrap-3.3.7/css/bootstrap.css">
+</head>
+<body>
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <form action="" method="post">
+            {% csrf_token %}
+                <div class="form-group">
+                    <label for="title">标题</label>
+                    <input type="text" class="form-control" id="title" name="title" placeholder="标题">
+                </div>
+                <div class="form-group">
+                    <label for="content">内容</label>
+                    <textarea name="content" id="content" cols="30" rows="20" class="form-control"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="category">文章分类</label>
+                    <select name="category" id="category" class="form-control">
+                        {% for category in category_list %}
+                            <option value="{{ category.id }}">{{ category.title }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-success">发布</button>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+<script src="/static/js/jquery.js"></script>
+<script charset="utf-8" src="/static/plugins/kindeditor/kindeditor-all.js"></script>
+<script charset="utf-8" src="/static/plugins/kindeditor/lang/zh-CN.js"></script>
+<script>
+    KindEditor.ready(function (K) {
+        window.editor = K.create('#content', {
+            "uploadJson": "/blog/upload/",  // 通过本插件上传文件时，处理文件的路由
+            "extraFileUploadParams": {"csrfmiddlewaretoken": $("[name='csrfmiddlewaretoken']").val()}
+            // 额外参数，提交post请求用
+        });
+    });
+</script>
+</html>

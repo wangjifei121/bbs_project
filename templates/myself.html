@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ user.blog.title }}</title>
+    <link rel="stylesheet" href="/root/my_BBS/bbs/static/bootstrap-3.3.7/css/bootstrap.css">
+    <link rel="stylesheet" href="/root/my_BBS/bbs/static/css/blog.css">
+</head>
+<body>
+
+<div class="container-fluid" style="margin: 20px 0 20px">
+    <div class="row">
+        <div class="col-md-6 col-md-offset-3" style="text-align: center">
+            <h2 style="color: blue;">This is {{ myself }} 的个人主页</h2>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid">
+
+    <div class="row">
+
+        <div class="col-md-2 col-md-offset-1">
+            <div class="panel panel-info">
+                <div class="panel panel-heading">
+                    <h3 class="panel-title">标签</h3>
+                </div>
+
+                <div class="panel-body">
+                    {% for tag in user.blog.tag_set.all %}
+                        {{ tag }}（{{ tag.count }}）
+                        <br>
+                    {% empty %}
+                        <span>没有标签。。。。。。</span>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="panel panel-info">
+                <div class="panel panel-heading">
+                    <h3 class="panel-title">文章分类</h3>
+                </div>
+                <div class="panel-body">
+                    {% for category in user.blog.category_set.all %}
+                        {{ category.title }}({{ category.article_set.all.count }})
+                        <br>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            {% for article in user.article_set.all %}
+                <div class="panel panel-success">
+
+                    <div class="panel-heading">
+                        {{ article.title }}
+                    </div>
+
+                    <div class="panel-body">
+                    {{ article.desc }}
+                    </div>
+
+                    <div class="panel-footer">
+                        posted @
+                        {{ article.create_time }}
+                        {{ myself }}
+                        阅读数（）
+                        评论数（）
+                    </div>
+
+
+                </div>
+            {% empty %}
+                <h2 style="color: #2aabd2">空空如也。。。</h2>
+            {% endfor %}
+        </div>
+
+    </div>
+</div>
+</body>
+</html>

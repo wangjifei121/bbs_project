@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ blog.title }}</title> {#【不同的博客站点有不同的博客标题】#}
+    <link rel="stylesheet" href="/root/my_BBS/bbs/static/bootstrap-3.3.7/css/bootstrap.css">
+    <link rel="stylesheet" href="/root/my_BBS/bbs/static/css/blog.css">
+    <link rel="stylesheet" href="/root/my_BBS/bbs/static/theme/{{ blog.theme }}.css">
+    {#【不同的博客站点有不同的样式】#}
+</head>
+<body>
+{##}
+<div class="head"></div>
+{#【测试不同样式用】#}
+
+{% csrf_token %}
+
+<div class="container">
+    <div class="row">
+
+        {% load my_tag %}
+
+        {% left_menu username %}
+
+
+
+
+        {% block page-main %}
+
+        {% endblock page-main %}
+
+
+    </div>
+</div>
+
+<script src="/static/js/jquery.js"></script>
+<script src="/static/bootstrap-3.3.7/js/bootstrap.js"></script>
+<script src="/static/js/setupAjax.js"></script>
+
+{% block page-js %}
+
+{% endblock page-js %}
+
+</body>
+</html>

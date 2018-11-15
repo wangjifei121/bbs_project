@@ -1,0 +1,199 @@
+{% extends 'base.html' %}
+{#【注意：一定要加引号】#}
+
+{% block page-main %}
+    <div class="col-md-10">
+
+        <div class="article">
+            <h3>{{ article.title }}</h3>
+            <p>{{ article.articledetail.content|safe }}</p>
+        </div>
+
+        <div class="clearfix">
+            <div id="div_digg">
+                {#            【点赞】#}
+                <div class="diggit digg">
+                    <span class="diggnum" id="digg_count">{{ article.up_count }}</span>
+                </div>
+
+                {#            【反对】#}
+                <div class="buryit digg">
+                    <span class="burynum" id="bury_count">{{ article.down_count }}</span>
+                </div>
+
+                {#            【清除浮动】#}
+                <div class="clear"></div>
+
+                <!-- 【提示信息】 -->
+                <div class="diggword" id="digg_tips"></div>
+            </div>
+        </div>
+
+        <hr>
+
+        {#【评论展示区开始】#}
+        <h4>评论：</h4>
+
+        <div class="list-group comment-list">
+            {% for comment in comments %}
+                <!--此属性为自定义属性，是为了后面要用到该评论的id值，且有不在页面上显示，所以写到这里面，保存到了自定义的my-id属性里-->
+                <div class="list-group-item" my-id="{{ comment.id }}">
+                    {#在h4中添加了comment-header类，方便在scc样式中对其进行添加样式#}
+                    <h4 class="list-group-item-heading comment-header">
+                        <span>{{ forloop.counter }}楼</span>
+                        <span>{{ comment.create_time|date:'Y-m-d H:i' }}</span>
+                        <span>{{ comment.user.username }}</span>
+                        <span class="pull-right replay">回复</span>
+                    </h4>
+                    {% if comment.parent_comment %}
+                        <span>@{{ comment.parent_comment.user.username }}</span>
+                        <p class="list-group-item-text well">  {#【well是bootstrap中的样式，显示加深样式】#}
+                            {{ comment.parent_comment.content }}
+                        </p>
+                        <p class="list-group-item-text comment-content">{{ comment.content }}</p>
+                    {% else %}
+                        <p class="list-group-item-text comment-content">{{ comment.content }}</p>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+
+        {#【评论展示区结束】#}
+        <hr>
+
+        {#【发表评论区 开始】#}
+        <h4>发表评论</h4>
+        <div>
+            <span>用户名：</span>
+            <input type="text" value="{{ request.user.username }}" disabled>
+        </div>
+        <div>
+            <p>评论内容：</p>
+            <textarea name="" id="new-comment" cols="60" rows="10">
+
+            </textarea>
+        </div>
+        <div>
+            <button id="submi-comment" class="btn btn-success">提交</button>
+        </div>
+
+
+        {#【发表评论区 结束】#}
+
+        <div style="height: 300px"></div>
+
+    </div>
+{% endblock page-main %}
+
+{% block page-js %}
+    <script>
+        // 【给点赞和反对按钮绑定事件】
+        $('.digg').click(function () {
+            // 【1，先判断有没有登录】
+            if (!'{{ request.user.username }}') {
+                // 没有登录就跳转到登录页面,（拼接的目的是想让用户登录后就立即跳转到此页面，但是登录的视图函数中没有此项功能）
+                location.href = '/login/?next={{ request.get_full_path }}'
+            }
+            // 登录之后的操作
+            var userid = '{{ request.user.id }}'; // 谁
+            var articleid = '{{ article.id }}';  // 给哪篇文章
+            // 如何区分点赞还是反对？
+            var isUp = $(this).hasClass('diggit');
+            // 点赞的标签（点击标签产生了一个布尔值，这个布尔值如何产生的【解释：这个标签有没有diggit属性，有就得出True，没有就产生False，得出的是字符串】）
+            // 向后端发送请求
+            $.ajax({
+                    url: '/Up_Down/',  // 处理点赞的url
+                    type: 'post',
+                    data: {
+                        'userid': userid,
+                        'articleid': articleid,
+                        'isup': isUp,
+                        'csrfmiddlewaretoken': $('[name="csrfmiddlewaretoken"]').val()
+                    },
+                    success: function (res) {
+                        console.log(res);
+                        // 如果不能点赞，就只显示提示信息
+                        if (res.code !== 0) {
+                            $('#digg_tips').text(res.msg);
+                        } else {  // 如果可以点赞，对数值进行操作完之后再显示提示信息
+                            if (isUp) {
+                                // 点击的是点赞按钮，更新点赞数
+                                var $up_span = $('#digg_count');
+                                $up_span.text(+$up_span.text() + 1)
+                            } else {
+                                var $down_span = $('#bury_count');
+                                $down_span.text(+$down_span.text() + 1)
+                            }
+                            $('#digg_tips').text(res.msg);
+                        }
+                    }
+                }
+            )
+
+        });
+        // 【给评论的提交按钮绑定事件】
+        $('#submi-comment').click(function () {
+            if (!'{{ request.user.username }}') {
+                // 没有登录就跳转到登录页面,（拼接的目的是想让用户登录后就立即跳转到此页面，但是登录的视图函数中没有此项功能）
+                location.href = '/login/?next={{ request.get_full_path }}'
+            }
+            var userid = '{{ request.user.id }}';
+            var articleid = '{{ article.id }}';
+            var content = $("#new-comment").val();
+            var parentId = $(this).data('pid') || '';  // 后添加的，为了区分是不是点击回复按钮之后的评论
+            //  ↑ 的意思是，如果前面有值就取前面的，没有值就取后面的。
+            if (parentId) {
+                content = content.slice(content.indexOf('\n') + 1)
+            }  // 如果是子评论，只将评论内容取出，传给后端
+            $.ajax({
+                url: '/comment/',
+                type: 'post',
+                data: {
+                    user_id: userid,
+                    content: content,
+                    article_id: articleid,
+                    parentid: parentId  // 传给后端，好判断是不是父评论。
+                },
+                success: function (res) {
+                    console.log(res);
+                    if (res.code === 0) {
+                        // 手动添加标签，显示刚才写的评论内容
+                        var data = res.data;  // 返回的数据信息
+                        var num = $('.comment-list>div').length + 1; // 新评论的楼层数
+                        var commentHtml = `
+                        <div href="#" class="list-group-item">
+                            <h4 class="list-group-item-heading comment-header">
+                                <span>${ num }楼</span>
+                                <span>${ data.create_time }</span>
+                                <span>${ data.username }</span>
+                                <span class="pull-right replay">回复</span>
+                            </h4>
+                            <p class="list-group-item-text comment-content">
+                                ${ content }
+                            </p>
+                        </div>`;
+                        // 在评论后添加一个评论
+                        $('.comment-list').append(commentHtml);
+                        // 同时清空输入框的内容
+                        $('#new-comment').val('');
+                    }
+                }
+            })
+
+
+        });
+        // 【给回复的按钮绑定事件】，为了使新添加的标签也有事件，所以用了事件委托，给父标签写上委托事件
+        // 正常的，没有委托的是【$('.replay').click(function(){})】↓有委托的事件是↓
+        $('.comment-list').on('click', '.replay', function () {
+            // 1,光标聚焦到评论框。2，添加一个@xxx的提示
+            var replayName = $(this).prev().text(); // 回复按钮的前一个标签的值就是名字
+            $("#new-comment").focus().val('@' + replayName + '\n');  // 聚焦到回复框内，且自动添加@xxx内容，换行。
+            // 点击回复，偷偷的将user的id值塞进提交按钮上，之后点提交时，他就可以判断是不是子评论了。
+            var pID = $(this).parent().parent().attr('my-id');
+            $('#submi-comment').data('pid', pID);
+        })
+
+    </script>
+{% endblock page-js %}
+
+

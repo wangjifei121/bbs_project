@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ blog.title }}</title> {#【不同的博客站点有不同的博客标题】#}
+    <link rel="stylesheet" href="/root/my_BBS/bbs/static/bootstrap-3.3.7/css/bootstrap.css">
+    <link rel="stylesheet" href="/root/my_BBS/bbs/static/css/blog.css">
+    <link rel="stylesheet" href="/root/my_BBS/bbs/static/theme/{{ blog.theme }}.css">
+    {#【不同的博客站点有不同的样式】#}
+</head>
+<body>
+{##}
+<div class="head"></div>
+{#【测试不同样式用】#}
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-2">
+            <div class="panel panel-success">
+                <div class="panel-heading">
+                    <h3 class="panel-title">文章分类🐎</h3>
+                </div>
+                <div class="panel-body">
+                    {% for c in count %}
+                        <p>
+                            <a href="/blog/{{ username }}/category/{{ c.1 }}/">{{ c.1 }}（{{ c.0 }}）</a>
+                        </p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="panel panel-info">
+                <div class="panel-heading">
+                    <h3 class="panel-title">文章标签🏷</h3>
+                </div>
+                <div class="panel-body">
+                    {% for tag in tag_list %}
+                        <p>
+                            <a href="/blog/{{ username }}/tag/{{ tag.title }}/">{{ tag.title }}（{{ tag.article_set.all.count }}）</a>
+                        </p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="panel panel-warning">
+                <div class="panel-heading">
+                    <h3 class="panel-title">日期归档🎰</h3>
+                </div>
+                <div class="panel-body">
+                    {% for archive in archive_list %}
+                        <p>
+                            <a href="/blog/{{ username }}/archive/{{ archive.y_m }}/">{{ archive.y_m }}（{{ archive.c }}）</a>
+                        </p>
+                    {% endfor %}
+
+                </div>
+            </div>
+
+        </div>
+        <div class="col-md-10">
+            <div class="article">
+                <h3>{{ article.title }}</h3>
+                {{ article.articledetail.content|safe }}
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
+{#【在index页面点击，跳转↓】#}
+{#【点击文章应该跳转到个人主页，该页面应该基于用户展示其对应属性，但需要单独展示文章的具体内容】#}
+{#【点击用户也是跳转到个人主页，但是除了和上面相同的部分之外，还应展示个人的文章简介队列】#}
+
+{#【在个人主页点击，跳转↓】#}
+{#【点击左侧统计栏也是跳到个人主页，但是内容部分显示的是属于一类的文章简介队列】#}

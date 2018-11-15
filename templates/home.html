@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ blog.title }}</title> {#【不同的博客站点有不同的博客标题】#}
+    <link rel="stylesheet" href="/root/my_BBS/bbs/static/bootstrap-3.3.7/css/bootstrap.css">
+    <link rel="stylesheet" href="/root/my_BBS/bbs/static/css/blog.css">
+    <link rel="stylesheet" href="/root/my_BBS/bbs/static/theme/{{ blog.theme }}.css">
+    {#【不同的博客站点有不同的样式】#}
+</head>
+<body>
+
+<div class="head"></div>
+{#【测试不同样式用】#}
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-2">
+            <div class="panel panel-success">
+                <div class="panel-heading">
+                    <h3 class="panel-title">文章分类🐎</h3>
+                </div>
+                <div class="panel-body">
+                    {% for c in count %}
+                        <p>
+                            <a href="/blog/{{ username }}/category/{{ c.1 }}/">{{ c.1 }}（{{ c.0 }}）</a>
+                                    {# 查出本站点的所有的分类 以及 本站点下分类下的文章数#}
+                        </p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="panel panel-info">
+                <div class="panel-heading">
+                    <h3 class="panel-title">文章标签🏷</h3>
+                </div>
+                <div class="panel-body">
+                    {% for tag in tag_list %}
+                        <p>
+                            <a href="/blog/{{ username }}/tag/{{ tag.title }}/">{{ tag.title }}（{{ tag.article_set.all.count }}）</a>
+                        </p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="panel panel-warning">
+                <div class="panel-heading">
+                    <h3 class="panel-title">日期归档🎰</h3>
+                </div>
+                <div class="panel-body">
+                    {% for archive in archive_list %}
+                        <p>
+                            <a href="/blog/{{ username }}/archive/{{ archive.y_m }}/">{{ archive.y_m }}（{{ archive.c }}）</a>
+                        </p>
+                    {% endfor %}
+
+                </div>
+            </div>
+
+        </div>
+        <div class="col-md-10">
+            <div class="article-list">
+                {% for article in article_list %}
+                    <!-- 文章 开始-->
+                    <div class="article">
+                        <div class="media">
+                            <a href="/blog/{{ username }}/p/{{ article.id }}"><h3 class="media-heading">{{ article.title }}</h3></a>
+                            <div class="media-left">
+                                <a href="#">
+                                    <img class="media-object author-avatar" src="/media/{{ article.user.avatar }}"
+                                         alt="">
+                                </a>
+                            </div>
+                            <div class="media-body">
+                                <div class="article-desc">
+                                    {{ article.desc }}
+                                </div>
+                                <div class="article-footer">
+                                    <span><a
+                                            href="/blog/{{ username }}/">{{ username }}</a></span>
+                                    <span>发布于&nbsp;{{ article.create_time|date:'Y-m-d H:i:s' }}</span>
+                                    <span class="glyphicon glyphicon-comment">评论({{ article.comment_count }})</span>
+                                    <span class="glyphicon glyphicon-thumbs-up">点赞({{ article.up_count }})</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <hr>
+                    <!-- 文章 结束-->
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

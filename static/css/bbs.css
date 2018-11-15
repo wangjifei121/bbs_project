@@ -1,0 +1,30 @@
+.login-form {
+    margin-top: 70px;
+}
+.err-text {
+    color: red;
+}
+/*#avatar-img{*/
+    /*height: 80px;*/
+    /*width: 80px;*/
+    /*margin-left: 15px;*/
+/*}*/
+/*#v-code{*/
+    /*width: 250px;*/
+    /*display: inline-block;*/
+/*}*/
+/*【为何不管用】*/
+.article{
+    margin-bottom: 20px;
+}
+.author-avatar{
+    height: 60px;
+    width: 60px;
+}
+.article-footer{
+    margin-right: 15px;
+}
+.article-footer span:first-child{
+    margin-right: 5px;
+}
+
